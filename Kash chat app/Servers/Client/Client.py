@@ -17,3 +17,13 @@ SERVER.bind(ADDR)  # set up server
 
 class client:
     def __init__(self, name):
+        self.client_socket = socket(AF_INET, SOCK_STREAM)
+        self.client_socket.connect(self.ADDR)
+        self.messages = []
+        receive_thread = Thread(target=self.receive_messages)
+        receive_thread.start()
+        self.send_message(name)
+        self.lock = Lock()
+
+    
+
