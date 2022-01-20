@@ -25,5 +25,39 @@ class client:
         self.send_message(name)
         self.lock = Lock()
 
+    def receivemessages(self):
+        while True:
+            try:
+                msg = self.client_socket.recv(self.BUFSIZ).decode()
+
+                # make sure memory is safe to access
+                self.lock.acquire()
+                self.messages.append(msg)
+                self.lock.release()
+            except Exception as e:
+                print("[EXCPETION]", e)
+                break
+
+    def sendmessage(self, msg):
+        try:
+            self.client_socket.send(bytes(msg, "utf8"))
+            if msg == "{quit}":
+                self.client_socket.close()
+        except Exception as e:
+            self.client_socket = socket(AF_INET, SOCK_STREAM)
+            self.client_socket.connect(self.ADDR)
+            print(e)
+
     
+    def getmessage(self):
+        messages_copy = self.messages[:]
+
+        self.lock.acquire()
+        self.messages = []
+        self.lock.release()
+        return messages_copy
+
+
+    def disconnected(self):
+        self.send_message("{quit}")
 
